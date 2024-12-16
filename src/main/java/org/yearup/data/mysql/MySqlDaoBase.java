@@ -6,10 +6,9 @@ import java.sql.SQLException;
 
 public abstract class MySqlDaoBase
 {
-    private DataSource dataSource;
+    DataSource dataSource;
 
-    public MySqlDaoBase(DataSource dataSource)
-    {
+    public MySqlDaoBase(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 

@@ -6,9 +6,11 @@ import java.util.List;
 
 public interface CategoryDao
 {
-    List<Category> getAllCategories();
+   // List<Category> getAllCategories();
+    List<Category> findAll(String sort);
     Category getById(int categoryId);
     Category create(Category category);
     void update(int categoryId, Category category);
     void delete(int categoryId);
+
 }
