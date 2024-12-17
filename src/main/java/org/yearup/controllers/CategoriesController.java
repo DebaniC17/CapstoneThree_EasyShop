@@ -1,7 +1,10 @@
 package org.yearup.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
 import org.yearup.data.ProductDao;
 import org.yearup.models.Category;
@@ -33,18 +36,37 @@ public CategoriesController(CategoryDao categoryDao) {
 
     // add the appropriate annotation for a get action
     @GetMapping
+    @PreAuthorize("permitAll()")
     public List<Category> getAll(
     @RequestParam(required = false) String sort
     ) {
-        // find and return all categories
+    try {
         return categoryDao.findAll(sort);
+    }
+    catch (Exception ex) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+    }
+        // find and return all categories
+
     }
 
     // add the appropriate annotation for a get action
-    public Category getById(@PathVariable int id)
-    {
+    @GetMapping("{id}")
+    @PreAuthorize("permitAll()")
+    public Category getById(@PathVariable int id) {
         // get the category by id
-        return null;
+        try {
+            var category = categoryDao.getById(id);
+
+            if(category == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                return  category;
+        }
+        catch (Exception ex)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
+
     }
 
     // the url to return all products in category 1 would look like this
@@ -57,15 +79,25 @@ public CategoriesController(CategoryDao categoryDao) {
     }
 
     // add annotation to call this method for a POST action
+    @PostMapping
     // add annotation to ensure that only an ADMIN can call this function
-    public Category addCategory(@RequestBody Category category)
-    {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+   public Category addCategory(@RequestBody Category category) {
+ //   public void addCategory(@RequestBody Category category) {
         // insert the category
-        return null;
+        try {
+            return categoryDao.create(category);
+        }
+        catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+        }
+       // return null;
     }
 
     // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
+    @PutMapping("{id}")
     // add annotation to ensure that only an ADMIN can call this function
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void updateCategory(@PathVariable int id, @RequestBody Category category)
     {
         // update the category by id

@@ -60,15 +60,75 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public Category getById(int categoryId)
-    {
+    public Category getById(int categoryId) {
         // get category by id
+        String query = "SELECT * FROM categories WHERE category_id = ?;";
+       // try (
+//                Connection connection = this.dataSource.getConnection();
+//                PreparedStatement preparedStatement = connection.prepareStatement(query);
+//
+//                ) {
+//            preparedStatement.setInt(1, categoryId);
+//            try (
+//                    ResultSet resultSet = preparedStatement.executeQuery();
+//
+//                    ) {
+//                if (resultSet.next()) {
+//                    return mapRow(resultSet);
+//                }
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+                try (Connection connection = getConnection())
+        {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setInt(1, categoryId);
+
+            ResultSet row = statement.executeQuery();
+
+            if (row.next())
+            {
+                return mapRow(row);
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
         return null;
     }
 
     @Override
     public Category create(Category category)
     {
+        String query = "INSERT INTO categories(category_id, name, description)" + " VALUES (?,?,?);";
+
+        try (
+                Connection connection = getConnection()
+                ) {
+            PreparedStatement statement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, category.getCategoryId());
+            statement.setString(2, category.getName());
+            statement.setString(3, category.getDescription());
+
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    int orderId = generatedKeys.getInt(1);
+
+                    return getById(orderId);
+                }
+            }
+        }
+        catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         // create a new category
         return null;
     }
