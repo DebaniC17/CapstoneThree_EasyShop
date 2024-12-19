@@ -29,10 +29,6 @@ public class CategoriesController {
         this.categoryDao = categoryDao;
         this.productDao = productDao;
     }
-//@Autowired
-//public ProductsController(ProductDao productDao) {
-//    this.productDao = productDao;
-//}
 
     // add the appropriate annotation for a get action
     @GetMapping
@@ -54,6 +50,7 @@ public class CategoriesController {
     @PreAuthorize("permitAll()")
     public Category getById(@PathVariable int id) {
         // get the category by id
+
         try {
             var category = categoryDao.getById(id);
 
@@ -118,6 +115,7 @@ public class CategoriesController {
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
     @DeleteMapping("{id}")
+    //@DeleteMapping("{/id}")
     // add annotation to ensure that only an ADMIN can call this function
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteCategory(@PathVariable int id) {
