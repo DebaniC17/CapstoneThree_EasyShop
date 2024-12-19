@@ -17,26 +17,25 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
     }
 
     @Override
-    public List<Product> search(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String color)
-    {
+    public List<Product> search(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String color, String name) {
         List<Product> products = new ArrayList<>();
 
         String sql = "SELECT * FROM products " +
                 "WHERE (category_id = ? OR ? = -1) " +
-       //        "   AND (price <= ? OR ? = -1) " +
                 " AND (price >= ? OR ? = -1) " +
                 " AND (price <= ? OR ? = -1) " +
-                " AND (color = ? OR ? = '') ";
+                " AND (color = ? OR ? = '') " +
+                " AND (name = ? OR ? = '') ";
 
         categoryId = categoryId == null ? -1 : categoryId;
         minPrice = minPrice == null ? new BigDecimal("-1") : minPrice;
         maxPrice = maxPrice == null ? new BigDecimal("-1") : maxPrice;
         color = color == null ? "" : color;
+        name = name == null ? "" : name.trim().toLowerCase();
 
-        try (Connection connection = getConnection()){
-        PreparedStatement statement = connection.prepareStatement(sql);
-      //  {
-        //    PreparedStatement statement = connection.prepareStatement(sql);
+        try (Connection connection = getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql)){
+
             statement.setInt(1, categoryId);
             statement.setInt(2, categoryId);
             statement.setBigDecimal(3, minPrice);
@@ -45,6 +44,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
             statement.setBigDecimal(6, maxPrice);
             statement.setString(7, color);
             statement.setString(8, color);
+            statement.setString(9,name);
+            statement.setString(10, name);
 
             ResultSet row = statement.executeQuery();
 
@@ -85,7 +86,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error executing product by search.", e);
         }
 
         return products;
@@ -96,9 +97,10 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
     public Product getById(int productId)
     {
         String sql = "SELECT * FROM products WHERE product_id = ?";
-        try (Connection connection = getConnection())
-        {
-            PreparedStatement statement = connection.prepareStatement(sql);
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)
+        ) {
+
             statement.setInt(1, productId);
 
             ResultSet row = statement.executeQuery();
@@ -110,20 +112,18 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error retrieving product by ID.", e);
         }
         return null;
     }
 
     @Override
-    public Product create(Product product)
-    {
+    public Product create(Product product) {
 
         String sql = "INSERT INTO products(name, price, category_id, description, color, image_url, stock, featured) " +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
-        try (Connection connection = getConnection())
-        {
+        try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             statement.setString(1, product.getName());
             statement.setBigDecimal(2, product.getPrice());
@@ -151,14 +151,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error creating product.",  e);
         }
         return null;
     }
 
     @Override
-    public void update(int productId, Product product)
-    {
+    public void update(int productId, Product product) {
         String sql = "UPDATE products" +
                 " SET name = ? " +
                 "   , price = ? " +
@@ -187,14 +186,12 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         }
         catch (SQLException e)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error updating product.", e);
         }
     }
 
     @Override
-    public void delete(int productId)
-    {
-
+    public void delete(int productId) {
         String sql = "DELETE FROM products " +
                 " WHERE product_id = ?;";
 

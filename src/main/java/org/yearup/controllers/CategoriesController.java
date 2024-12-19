@@ -17,10 +17,11 @@ import java.util.List;
 // add the annotation to make this controller the endpoint for the following url
 // http://localhost:8080/categories
 // add annotation to allow cross site origin requests
-@RequestMapping("categories")
+@RequestMapping("/categories")
+@CrossOrigin
 public class CategoriesController {
-    private CategoryDao categoryDao;
-     private ProductDao productDao;
+    private final CategoryDao categoryDao;
+     private final ProductDao productDao;
 
 
     // create an Autowired controller to inject the categoryDao and ProductDao
@@ -33,16 +34,13 @@ public class CategoriesController {
     // add the appropriate annotation for a get action
     @GetMapping
     @PreAuthorize("permitAll()")
-    public List<Category> getAll(
-            @RequestParam(required = false) String sort
-    ) {
+    public List<Category> getAll(@RequestParam(required = false) String sort) {
         try {
             return categoryDao.findAll(sort);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error in retrieving categories.", ex);
         }
         // find and return all categories
-
     }
 
     // add the appropriate annotation for a get action
@@ -55,10 +53,10 @@ public class CategoriesController {
             var category = categoryDao.getById(id);
 
             if (category == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
             return category;
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve category.", ex);
         }
 
     }
@@ -77,7 +75,7 @@ public class CategoriesController {
             }
             return products;
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error in retrieving products.", ex);
 
         }
       //  return null;
@@ -93,7 +91,7 @@ public class CategoriesController {
         try {
             return categoryDao.create(category);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error in adding category.", ex);
         }
         // return null;
     }
@@ -107,7 +105,7 @@ public class CategoriesController {
             // categoryDao.create(category);
             categoryDao.update(id, category);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error in updating category.", ex);
         }
         // update the category by id
     }
@@ -121,14 +119,14 @@ public class CategoriesController {
     public void deleteCategory(@PathVariable int id) {
         // delete the category by id
         try {
-            var product = categoryDao.getById(id);
+            var category = categoryDao.getById(id);
 
-            if (product == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            if (category == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
 
             categoryDao.delete(id);
         } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete category.", ex);
         }
     }
 }
