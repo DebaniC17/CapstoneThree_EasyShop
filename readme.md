@@ -4,7 +4,7 @@
 EasyShop is a robust shopping cart management system designed to enhance the shopping experience on the EasyShop website. It features user authentication and role-based access control, ensuring that only authenticated users can manage their carts while administrators can efficiently add, update, and manage categories and products. The application leverages MySQL for data persistence and is designed to be modular, maintainable, and extensible.
 ---
 ## Progress In Capstone
-Some of phase 3, wasn't able to test out my controller or dao for shopping cart. 
+Got to some of phase 3, wasn't able to test out for product15 my controller or dao for shopping cart since I couldn't get the shopping cart to load.  
 
 ## Features
 
