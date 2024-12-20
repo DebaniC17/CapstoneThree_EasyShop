@@ -19,11 +19,13 @@ import java.security.Principal;
 // only logged in users should have access to these actions
 @PreAuthorize("hasRole('ROLE_USER')")
 @RequestMapping("cart")
+@CrossOrigin
+//@PreAuthorize("isAuthenticated()")
 public class ShoppingCartController {
     // a shopping cart requires
-    private ShoppingCartDao shoppingCartDao;
-    private UserDao userDao;
-    private ProductDao productDao;
+    private final ShoppingCartDao shoppingCartDao;
+    private final UserDao userDao;
+    private final ProductDao productDao;
 
     @Autowired
     public ShoppingCartController(ShoppingCartDao shoppingCartDao, UserDao userDao, ProductDao productDao) {
@@ -34,6 +36,7 @@ public class ShoppingCartController {
 
 
     // each method in this controller requires a Principal object as a parameter
+
     private int getUserIdFromPrincipal(Principal principal) {
         String username = principal.getName();
         User user = userDao.getByUserName(username);
@@ -41,28 +44,30 @@ public class ShoppingCartController {
         if (user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
+        System.out.println("User ID: " + user.getId());
         return user.getId();
     }
 
 
     @GetMapping
+
     public ShoppingCart getCart(Principal principal) {
         try {
             // get the currently logged-in username
-            // String userName = principal.getName();
+             String userName = principal.getName();
             // find database user by userId
-            // User user = userDao.getByUserName(userName);
+             User user = userDao.getByUserName(userName);
             //  int userId = user.getId();
             int userId = getUserIdFromPrincipal(principal);
 
-//            if (user == null) {
-//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
-//            }
+            if (user == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+            }
 
             // use the shoppingCartDao to get all items in the cart and return the cart
             return shoppingCartDao.getByUserId(userId);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving cart.");
         }
     }
 
