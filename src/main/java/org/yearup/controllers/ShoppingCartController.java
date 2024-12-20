@@ -14,15 +14,12 @@ import org.yearup.models.User;
 
 import java.security.Principal;
 
-// convert this class to a REST controller
 @RestController
-// only logged in users should have access to these actions
 @PreAuthorize("hasRole('ROLE_USER')")
 @RequestMapping("cart")
 @CrossOrigin
-//@PreAuthorize("isAuthenticated()")
 public class ShoppingCartController {
-    // a shopping cart requires
+
     private final ShoppingCartDao shoppingCartDao;
     private final UserDao userDao;
     private final ProductDao productDao;
@@ -34,9 +31,7 @@ public class ShoppingCartController {
         this.productDao = productDao;
     }
 
-
-    // each method in this controller requires a Principal object as a parameter
-
+    // a helper method
     private int getUserIdFromPrincipal(Principal principal) {
         String username = principal.getName();
         User user = userDao.getByUserName(username);
@@ -48,51 +43,45 @@ public class ShoppingCartController {
         return user.getId();
     }
 
-
     @GetMapping
-
     public ShoppingCart getCart(Principal principal) {
+
         try {
-            // get the currently logged-in username
-             String userName = principal.getName();
-            // find database user by userId
-             User user = userDao.getByUserName(userName);
-            //  int userId = user.getId();
+            String userName = principal.getName();
+            User user = userDao.getByUserName(userName);
             int userId = getUserIdFromPrincipal(principal);
 
             if (user == null) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
             }
-
-            // use the shoppingCartDao to get all items in the cart and return the cart
             return shoppingCartDao.getByUserId(userId);
+
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving cart.");
+
         }
     }
 
-
-    // add a POST method to add a product to the cart - the url should be
-    // @PostMapping("/product/{productId}")
     @PostMapping("/product/{productId}")
-
     // https://localhost:8080/cart/products/15 (15 is the productId to be added
     public void addProductToCart(@PathVariable("productId") int productId, Principal principal) {
+
         try {
             int userId = getUserIdFromPrincipal(principal);
             shoppingCartDao.addProductToCart(userId, productId);
+
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not add product to cart.");
+
         }
     }
 
-    // add a PUT method to update an existing product in the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
     @PutMapping("/product/{productId}")
-    // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
     public void updateProductInCart(@PathVariable("productId") int productId,
                                     @RequestBody ShoppingCartItem updatedItem,
                                     Principal principal) {
+
         try {
             int userId = getUserIdFromPrincipal(principal);
 
@@ -106,21 +95,23 @@ public class ShoppingCartController {
 
         } catch (ResponseStatusException e) {
             throw e;
+
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not update in cart.");
+
         }
     }
 
-    // add a DELETE method to clear all products from the current users cart
-    // https://localhost:8080/cart
-
     @DeleteMapping
     public void clearCart(Principal principal) {
+
         try {
             int userId = getUserIdFromPrincipal(principal);
             shoppingCartDao.clearCart(userId);
+
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not clear the cart.");
+
         }
     }
 }
