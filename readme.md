@@ -112,6 +112,8 @@ Some of phase 3, wasn't able to test out my controller or dao for shopping cart.
 ---
 ### Interesting Piece Of Code
 I got to thinking that if there was already an item in the user's shopping cart, would an error occur? Then somewhere I read that it would and that I could fix it by using duplicate key query.
+[Geeks for geeks on duplicate key errors](https://www.geeksforgeeks.org/how-to-handle-duplicate-key-violations-in-jdbc/)
+[Using duplicate keys update](https://stackoverflow.com/questions/73557454/performatic-insert-into-database-to-catch-duplicate-key-error)
 ![duplicatekeyupdatequery](images%2Fduplicatekeyupdatequery.jpg)
 So instead of throwing up an error, that query would kick in by updating the quantity column in that row by adding 1 to the current value (quantity = quantity + 1).
 ---
